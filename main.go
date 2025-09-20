@@ -50,15 +50,16 @@ func main() {
 		return
 	}
 
-	solver.Solve(newJob, *algorithm)
-	// for _, x0 := range solver.GetInitValues(newJob) {
-	// 	result := solver.Solve(newJob, algorithm)
-	// 	if result.Err != nil {
-	// 		fmt.Println("Error:", result.Err)
-	// 	} else {
-	// 		fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
-	// 	}
-	// }
+	solutions := solver.Solve(newJob, *algorithm)
+
+	for _, result := range solutions {
+		if result.Err != nil {
+			fmt.Println("Error:", result.Err)
+		} else {
+			fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
+		}
+	}
+
 	elapsed := time.Since(start)
 	runtime.ReadMemStats(&mEnd)
 	usedMemory := (mEnd.Alloc - mStart.Alloc) / 1024

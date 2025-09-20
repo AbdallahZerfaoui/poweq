@@ -15,7 +15,7 @@ func ValidateJob(job Job) error {
 	if job.K <= 0 {
 		return errors.New("K must be positive")
 	}
-	if job.A <= 0 || job.B <= 0 {
+	if job.A < 0 || job.B <= 0 {
 		return errors.New("A and B must be positive")
 	}
 	if job.A >= job.B {

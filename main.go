@@ -14,20 +14,20 @@ func main() {
 	runtime.ReadMemStats(&mStart)
 
 	start := time.Now()
-	optsFlagSet := flag.NewFlagSet("poweq", flag.ExitOnError)
+	solverFlagSet := flag.NewFlagSet("poweq", flag.ExitOnError)
 
 	// Flags: it returns a pointer to the variable
-	n := optsFlagSet.Float64("n", 1.0, "The exponent n in the equation x^n = K m^x")
-	m := optsFlagSet.Float64("m", 1.0, "The base m in the equation x^n = K m^x")
-	K := optsFlagSet.Float64("K", 1.0, "The coefficient K in the equation x^n = K m^x")
-	a := optsFlagSet.Float64("a", 1e-6, "Lowwer bound of the interval to search for a solution")
-	b := optsFlagSet.Float64("b", 1e6, "Upper bound of the interval to search for a solution")
-	tolence := optsFlagSet.Float64("tol", 1e-6, "Tolerance for the solution")
-	maxIter := optsFlagSet.Int("maxIter", 100, "Maximum number of iterations")
-	algorithm := optsFlagSet.String("alg", "newton", "Algorithm to use: 'newton' or 'bisection'")
+	n := solverFlagSet.Float64("n", 1.0, "The exponent n in the equation x^n = K m^x")
+	m := solverFlagSet.Float64("m", 1.0, "The base m in the equation x^n = K m^x")
+	K := solverFlagSet.Float64("K", 1.0, "The coefficient K in the equation x^n = K m^x")
+	a := solverFlagSet.Float64("a", 1e-6, "Lowwer bound of the interval to search for a solution")
+	b := solverFlagSet.Float64("b", 1e6, "Upper bound of the interval to search for a solution")
+	tolence := solverFlagSet.Float64("tol", 1e-6, "Tolerance for the solution")
+	maxIter := solverFlagSet.Int("maxIter", 100, "Maximum number of iterations")
+	algorithm := solverFlagSet.String("alg", "newton", "Algorithm to use: 'newton' or 'bisection'")
 
 	// Before this step, n, m and K are default values
-	err := optsFlagSet.Parse(os.Args[1:])
+	err := solverFlagSet.Parse(os.Args[2:])
 	if err != nil {
 		fmt.Println("Error parsing flags:", err)
 		return

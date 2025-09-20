@@ -24,6 +24,7 @@ func main() {
 	b := optsFlagSet.Float64("b", 1e6, "Upper bound of the interval to search for a solution")
 	tolence := optsFlagSet.Float64("tol", 1e-6, "Tolerance for the solution")
 	maxIter := optsFlagSet.Int("maxIter", 100, "Maximum number of iterations")
+	algorithm := optsFlagSet.String("alg", "newton", "Algorithm to use: 'newton' or 'bisection'")
 
 	// Before this step, n, m and K are default values
 	err := optsFlagSet.Parse(os.Args[1:])
@@ -44,14 +45,20 @@ func main() {
 	fmt.Printf("Solving the equation x^%.2f = %.2f * %.2f^x\n", *n, *K, *m)
 	fmt.Printf("Searching for a solution in the interval [%.2f, %.2f] with tolerance %.2e and max iterations %d\n", *a, *b, *tolence, *maxIter)
 
-	for _, x0 := range solver.GetInitValues(newJob) {
-		result := solver.Solve(newJob, x0)
-		if result.Err != nil {
-			fmt.Println("Error:", result.Err)
-		} else {
-			fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
-		}
+	if !solver.SolutionsExist(newJob) {
+		fmt.Println("No solutions exist for the given parameters.")
+		return
 	}
+
+	solver.Solve(newJob, *algorithm)
+	// for _, x0 := range solver.GetInitValues(newJob) {
+	// 	result := solver.Solve(newJob, algorithm)
+	// 	if result.Err != nil {
+	// 		fmt.Println("Error:", result.Err)
+	// 	} else {
+	// 		fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
+	// 	}
+	// }
 	elapsed := time.Since(start)
 	runtime.ReadMemStats(&mEnd)
 	usedMemory := (mEnd.Alloc - mStart.Alloc) / 1024

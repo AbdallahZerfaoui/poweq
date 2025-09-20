@@ -12,6 +12,11 @@ import (
 // f'(x) = n/x - ln(m)
 
 func Solve(job Job, method string) {
+	// Handle edge cases first
+	if handleEdgeCases(job) {
+		return
+	}
+
 	switch method {
 	case "newton":
 		for _, x0 := range GetInitValues(job) {
@@ -108,6 +113,35 @@ func BisectionSolve(job Job, lower float64, upper float64) Result {
 	}
 
 	return Result{0, 0, errors.New("maximum iterations reached without convergence")}
+}
+
+func handleEdgeCases(job Job) bool {
+	n, m, K := job.N, job.M, job.K
+	a, b := job.A, job.B
+
+	// Case m = 1
+	if m == 1 {
+		solution := math.Pow(K, 1/n)
+		if solution >= a && solution <= b {
+			fmt.Printf("Special case m=1: Unique solution x = %.6f\n", solution)
+		} else {
+			fmt.Println("Special case m=1: No solutions in the given interval")
+		}
+		return true
+	}
+
+	// Case n = 0
+	if n == 0 {
+		solution := -1.0 * math.Log(K) / math.Log(m)
+		if solution >= a && solution <= b {
+			fmt.Printf("Special case n=0: Unique solution x = %.6f\n", solution)
+		} else {
+			fmt.Println("Special case n=0: No solutions in the given interval")
+		}
+		return true
+	}
+
+	return false
 }
 
 func GetInitValues(job Job) []float64 {

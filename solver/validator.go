@@ -6,8 +6,8 @@ import (
 )
 
 func ValidateJob(job Job) error {
-	if job.N <= 0 {
-		return errors.New("n must be positive")
+	if job.N < 0 {
+		return errors.New("n must be positive or zero")
 	}
 	if job.M < 1 {
 		return errors.New("m must be at least 1")

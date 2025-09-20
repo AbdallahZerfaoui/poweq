@@ -35,15 +35,15 @@ func main() {
 		return
 	}
 
-	result := solver.Solve(newJob)
-	if result.Err != nil {
-		fmt.Println("Error:", result.Err)
-	} else {
-		fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
-	}
-
 	fmt.Printf("Solving the equation x^%.2f = %.2f * %.2f^x\n", *n, *K, *m)
 	fmt.Printf("Searching for a solution in the interval [%.2f, %.2f] with tolerance %.2e and max iterations %d\n", *a, *b, *tolence, *maxIter)
+
+	for _, x0 := range solver.GetInitValues(newJob) {
+		result := solver.Solve(newJob, x0)
+		if result.Err != nil {
+			fmt.Println("Error:", result.Err)
+		} else {
+			fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
+		}
+	}
 }
-
-

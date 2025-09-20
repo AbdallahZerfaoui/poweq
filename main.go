@@ -5,9 +5,15 @@ import (
 	"fmt"
 	"github.com/AbdallahZerfaoui/poweq/solver"
 	"os"
+	"time"
+	"runtime"
 )
 
 func main() {
+	var mStart, mEnd runtime.MemStats
+	runtime.ReadMemStats(&mStart)
+
+	start := time.Now()
 	optsFlagSet := flag.NewFlagSet("poweq", flag.ExitOnError)
 
 	// Flags: it returns a pointer to the variable
@@ -46,4 +52,9 @@ func main() {
 			fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
 		}
 	}
+	elapsed := time.Since(start)
+	runtime.ReadMemStats(&mEnd)
+	usedMemory := (mEnd.Alloc - mStart.Alloc) / 1024
+	fmt.Printf("Used memory: %d KB\n", usedMemory)
+	fmt.Printf("Execution time: %s\n", elapsed)
 }

@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+const (
+	NBR_FIELDS     = 8
+)
+
 func readJobsFromCSV(file *os.File) ([]solver.Job, error) {
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
@@ -20,7 +24,7 @@ func readJobsFromCSV(file *os.File) ([]solver.Job, error) {
 	var jobs []solver.Job
 	for _, record := range records[1:] { // Skip header
 		// fmt.Println("[debug] record:", record)
-		if len(record) != 8 {
+		if len(record) != NBR_FIELDS {
 			fmt.Println("Invalid record length:", record)
 			continue
 		}

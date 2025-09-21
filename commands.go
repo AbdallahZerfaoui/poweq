@@ -1,11 +1,16 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/AbdallahZerfaoui/poweq/solver"
 	"os"
-	"errors"
+)
+
+const (
+	DEFAULT_SOLUTIONS_ALGO = "newton"
+	DEFAULT_ERROR_SOLUTION = -1.0
 )
 
 func solveCommand(args []string) ([]solver.Result, error) {
@@ -109,18 +114,18 @@ func scanCommand(args []string) (solver.Batch, error) {
 	for _, job := range batch.Jobs {
 		if err := solver.ValidateJob(job); err != nil {
 			fmt.Println("Invalid job parameters:", err)
-			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: err})
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: err})
 			continue
 		}
 		if !solver.SolutionsExist(job) {
-			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
 			continue
 		}
-		solutions := solver.Solve(job, "newton") // or "bisection"
+		solutions := solver.Solve(job, DEFAULT_SOLUTIONS_ALGO) // or "bisection"
 		if len(solutions) > 0 {
 			batch.Results = append(batch.Results, solutions...)
 		} else {
-			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: errors.New("no solutions found")})
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: errors.New("no solutions found")})
 		}
 	}
 

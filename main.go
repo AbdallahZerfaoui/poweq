@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const(
+	KILO = 1024
+)
+
 func main() {
 	var mStart, mEnd runtime.MemStats
 	runtime.ReadMemStats(&mStart)
@@ -37,7 +41,7 @@ func main() {
 
 	elapsed := time.Since(start)
 	runtime.ReadMemStats(&mEnd)
-	usedMemory := (mEnd.Alloc - mStart.Alloc) / 1024
+	usedMemory := (mEnd.Alloc - mStart.Alloc) / KILO
 	fmt.Printf("Used memory: %d KB\n", usedMemory)
 	fmt.Printf("Execution time: %s\n", elapsed)
 }

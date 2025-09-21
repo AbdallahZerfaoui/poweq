@@ -1,5 +1,9 @@
 package solver
 
+// import (
+// 	"io"
+// )
+
 type Job struct {
 	N, M, K float64
 	A, B    float64
@@ -14,7 +18,8 @@ type Result struct {
 }
 
 type Batch struct {
-	inFile, outFile string
-	Jobs            []Job
-	Results         []Result
+	InFile  string
+	OutFile string
+	Jobs    []Job
+	Results []Result
 }

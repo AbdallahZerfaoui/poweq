@@ -1,9 +1,5 @@
 package solver
 
-// import (
-// 	"io"
-// )
-
 type Job struct {
 	Id      int
 	N, M, K float64

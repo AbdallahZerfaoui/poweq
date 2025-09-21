@@ -1,6 +1,6 @@
 # PoweQ - Numerical Equation Solver
 
-A command-line tool for solving equations of the form `x^n = A × m^x + K` using numerical methods.
+A command-line tool for solving equations of the form `x^n = K × m^x` using numerical methods.
 
 ## Overview
 
@@ -12,14 +12,13 @@ The solver supports both single equation solving and batch processing from CSV f
 
 The general equation solved is:
 ```
-x^n - A × m^x - K = 0
+x^n - K × m^x = 0
 ```
 
 Where:
 - `n`: power of x
 - `m`: exponential base  
-- `A`: exponential coefficient
-- `K`: constant term
+- `K`: exponential coefficient
 - Solution found in interval `[a, b]`
 
 ## Installation
@@ -42,22 +41,21 @@ go build -o poweq ./cmd/poweq
 ```
 
 **Options:**
-- `-n float`: Power of x (default: 2.0)
+- `-n float`: Power of x (default: 1.0)
 - `-m float`: Exponential base (default: 2.718281828)
-- `-K float`: Constant term (default: 0.0)  
-- `-A float`: Exponential coefficient (default: 1.0)
+- `-K float`: Exponential coefficient (default: 1.0)
 - `-a float`: Lower bound of search interval (default: 0.0)
-- `-b float`: Upper bound of search interval (default: 10.0)
+- `-b float`: Upper bound of search interval (default: 1e6)
 - `-tol float`: Convergence tolerance (default: 1e-6)
-- `-max int`: Maximum iterations (default: 1000)
+- `-max int`: Maximum iterations (default: 100)
 
 **Example:**
 ```bash
-# Solve x^2 = 5 × 3^x + 1.5 in interval [0, 10]
-./poweq solve -n 2 -m 3 -K 1.5 -A 5 -a 0 -b 10
+# Solve x^2 = 5 × 3^x in interval [0, 10]
+./poweq solve -n 2 -m 3 -K 5 -a 0 -b 10
 
 # High precision solving
-./poweq solve -n 3 -m 2 -K 0.5 -A 2 -a 0 -b 5 -tol 1e-12 -max 5000
+./poweq solve -n 3 -m 2 -K 0.5 -a 0 -b 5 -tol 1e-12 -max 5000
 ```
 
 ### Batch Processing
@@ -90,8 +88,7 @@ id,N,M,K,A,B,Tol,MaxIter
 - `id`: Unique identifier for the equation
 - `N`: Power of x
 - `M`: Exponential base
-- `K`: Constant term
-- `A`: Exponential coefficient  
+- `K`: Exponential coefficient  
 - `B`: Upper bound of search interval (lower bound is 0)
 - `Tol`: Convergence tolerance
 - `MaxIter`: Maximum iterations allowed

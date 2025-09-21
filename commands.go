@@ -1,0 +1,134 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"github.com/AbdallahZerfaoui/poweq/solver"
+	"os"
+	"errors"
+)
+
+func solveCommand(args []string) ([]solver.Result, error) {
+	solverFlagSet := flag.NewFlagSet("poweq", flag.ExitOnError)
+
+	// Create flag set for the "solve" command
+	n := solverFlagSet.Float64("n", 1.0, "The exponent n in the equation x^n = K m^x")
+	m := solverFlagSet.Float64("m", 1.0, "The base m in the equation x^n = K m^x")
+	K := solverFlagSet.Float64("K", 1.0, "The coefficient K in the equation x^n = K m^x")
+	a := solverFlagSet.Float64("a", 1e-6, "Lowwer bound of the interval to search for a solution")
+	b := solverFlagSet.Float64("b", 1e6, "Upper bound of the interval to search for a solution")
+	tolence := solverFlagSet.Float64("tol", 1e-6, "Tolerance for the solution")
+	maxIter := solverFlagSet.Int("maxIter", 100, "Maximum number of iterations")
+	algorithm := solverFlagSet.String("alg", "newton", "Algorithm to use: 'newton' or 'bisection'")
+
+	// Parse flags and execute solving logic
+	err := solverFlagSet.Parse(args)
+	if err != nil {
+		fmt.Println("Error parsing flags:", err)
+		return nil, err
+	}
+
+	newJob := solver.Job{Id: 0, N: *n, M: *m, K: *K,
+		A: *a, B: *b,
+		Tol: *tolence, MaxIter: *maxIter}
+
+	if err := solver.ValidateJob(newJob); err != nil {
+		fmt.Println("Invalid job parameters:", err)
+		return nil, err
+	}
+	// Use the right solver functions from the solver package
+
+	fmt.Printf("Solving the equation x^%.2f = %.2f * %.2f^x\n", *n, *K, *m)
+	fmt.Printf("Searching for a solution in the interval [%.2f, %.2f] with tolerance %.2e and max iterations %d\n", *a, *b, *tolence, *maxIter)
+
+	if !solver.SolutionsExist(newJob) {
+		fmt.Println("No solutions exist for the given parameters.")
+		return nil, errors.New("no solutions exist for the given parameters")
+	}
+
+	solutions := solver.Solve(newJob, *algorithm)
+
+	return solutions, nil
+}
+
+func displaySolutions(solutions []solver.Result) {
+	for _, result := range solutions {
+		if result.Err != nil {
+			fmt.Println("Error:", result.Err)
+		} else {
+			fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
+		}
+	}
+}
+
+func scanCommand(args []string) (solver.Batch, error) {
+	scannerFlagSet := flag.NewFlagSet("scan", flag.ExitOnError)
+
+	// Create flag set for the "scan" command
+	in := scannerFlagSet.String("in", "jobs.csv", "Input file containing jobs to solve")
+	out := scannerFlagSet.String("out", "solutions.csv", "Output file to write solutions")
+
+	// Parse flags
+	err := scannerFlagSet.Parse(args)
+	if err != nil {
+		fmt.Println("Error parsing flags:", err)
+		return solver.Batch{}, err
+	}
+
+	// Create a Batch instance
+	batch := solver.Batch{InFile: *in, OutFile: *out,
+		Jobs: []solver.Job{}, Results: []solver.Result{}}
+
+	// Open files
+	inFile, err := os.Open(*in)
+	if err != nil {
+		fmt.Println("Error opening input file:", err)
+		return solver.Batch{}, err
+	}
+	defer inFile.Close()
+
+	outFile, err := os.Create(*out)
+	if err != nil {
+		fmt.Println("Error creating output file:", err)
+		return solver.Batch{}, err
+	}
+	defer outFile.Close()
+
+	// Read jobs from input file
+	jobs, err := readJobsFromCSV(inFile)
+	if err != nil {
+		fmt.Println("Error reading jobs from input file:", err)
+		return solver.Batch{}, err
+	}
+	batch.Jobs = jobs
+	// Build a map of jobs by their IDs for easy lookup
+	jobsMap := buildJobsMap(jobs)
+
+	// fmt.Println("[debug] Jobs loaded:", len(batch.Jobs))
+	// Solve each job and collect results
+	for _, job := range batch.Jobs {
+		if err := solver.ValidateJob(job); err != nil {
+			fmt.Println("Invalid job parameters:", err)
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: err})
+			continue
+		}
+		if !solver.SolutionsExist(job) {
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
+			continue
+		}
+		solutions := solver.Solve(job, "newton") // or "bisection"
+		if len(solutions) > 0 {
+			batch.Results = append(batch.Results, solutions...)
+		} else {
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: errors.New("no solutions found")})
+		}
+	}
+
+	// Write results to output file using the helper function
+	batch, err = writeResultsToCSV(outFile, batch, jobsMap)
+	if err != nil {
+		fmt.Println("Error writing results to output file:", err)
+		return batch, err
+	}
+	return batch, nil
+}

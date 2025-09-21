@@ -1,7 +1,7 @@
 EXEC = poweq
 
 build: 
-	go build -o $(EXEC) main.go csv.go
+	go build -o $(EXEC) main.go csv.go commands.go
 
 re-build: clean build
 

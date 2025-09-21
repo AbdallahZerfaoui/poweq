@@ -12,3 +12,9 @@ type Result struct {
 	Steps int
 	Err   error
 }
+
+type Batch struct {
+	inFile, outFile string
+	Jobs            []Job
+	Results         []Result
+}

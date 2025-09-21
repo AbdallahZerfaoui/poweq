@@ -1,15 +1,15 @@
 package main
 
 import (
+	"encoding/csv"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/AbdallahZerfaoui/poweq/solver"
 	"os"
-	"time"
 	"runtime"
-	"errors"
-	"encoding/csv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -20,11 +20,10 @@ func main() {
 
 	// scannerFlagSet := flag.NewFlagSet("scan", flag.ExitOnError)
 
-
 	// Scanner Flags
 	// inFile := scannerFlagSet.String("in", "jobs.csv", "Input file containing jobs to solve")
 	// outFile := scannerFlagSet.String("out", "solutions.csv", "Output file to write solutions")
-	
+
 	// Before this step, n, m and K are default values
 	switch os.Args[1] {
 	case "scan":
@@ -116,7 +115,7 @@ func displaySolutions(solutions []solver.Result) {
 
 func scanCommand(args []string) (solver.Batch, error) {
 	scannerFlagSet := flag.NewFlagSet("scan", flag.ExitOnError)
-	
+
 	// Create flag set for the "scan" command
 	in := scannerFlagSet.String("in", "jobs.csv", "Input file containing jobs to solve")
 	out := scannerFlagSet.String("out", "solutions.csv", "Output file to write solutions")
@@ -157,7 +156,7 @@ func scanCommand(args []string) (solver.Batch, error) {
 	// Build a map of jobs by their IDs for easy lookup
 	jobsMap := buildJobsMap(jobs)
 
-	fmt.Println("[debug] Jobs loaded:", len(batch.Jobs))
+	// fmt.Println("[debug] Jobs loaded:", len(batch.Jobs))
 	// Solve each job and collect results
 	for _, job := range batch.Jobs {
 		if err := solver.ValidateJob(job); err != nil {
@@ -166,8 +165,8 @@ func scanCommand(args []string) (solver.Batch, error) {
 			continue
 		}
 		if !solver.SolutionsExist(job) {
-			fmt.Printf("[debug] Solving job %d: N=%.2f, M=%.2f, K=%.2f, A=%.2f, B=%.2f, Tol=%.2e, MaxIter=%d\n", job.Id, job.N, job.M, job.K, job.A, job.B, job.Tol, job.MaxIter)
-			fmt.Println("[scan] No solutions exist for the given parameters.")
+			// fmt.Printf("[debug] Solving job %d: N=%.2f, M=%.2f, K=%.2f, A=%.2f, B=%.2f, Tol=%.2e, MaxIter=%d\n", job.Id, job.N, job.M, job.K, job.A, job.B, job.Tol, job.MaxIter)
+			// fmt.Println("[scan] No solutions exist for the given parameters.")
 			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
 			continue
 		}
@@ -192,6 +191,10 @@ func scanCommand(args []string) (solver.Batch, error) {
 
 	// Write records
 	for _, result := range batch.Results {
+		if result.Id == 0 {
+			fmt.Println("Skipping result with no associated job ID")
+			continue // Skip results with no associated job ID
+		}
 		job := jobsMap[result.Id]
 		err = writer.Write([]string{
 			fmt.Sprintf("%d", job.Id),

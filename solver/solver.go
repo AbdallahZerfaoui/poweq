@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	// "fmt"
 )
 
 // Equation to solve: x^n = K * m^x
@@ -17,7 +16,7 @@ func Solve(job Job, method string) []Result {
 	// Handle edge cases first
 	if done, solution := handleEdgeCases(job); done {
 		if solution != -1.0 {
-			return append(solutions, Result{X: solution, Steps: 0, Err: nil})
+			return append(solutions, Result{Id: job.Id, X: solution, Steps: 0, Err: nil})
 		}
 	}
 
@@ -27,7 +26,7 @@ func Solve(job Job, method string) []Result {
 			result := NewtonSolve(job, x0)
 			if result.Err != nil {
 				fmt.Println("Error:", result.Err)
-				solutions = append(solutions, Result{X: -1.0, Steps: 0, Err: result.Err})
+				solutions = append(solutions, Result{Id: job.Id, X: -1.0, Steps: 0, Err: result.Err})
 			} else {
 				// fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
 				solutions = append(solutions, result)
@@ -40,12 +39,12 @@ func Solve(job Job, method string) []Result {
 			result := BisectionSolve(job, interval[0], interval[1])
 			if result.Err != nil {
 				fmt.Println("Error:", result.Err)
-				solutions = append(solutions, Result{X: -1.0, Steps: 0, Err: result.Err})
+				solutions = append(solutions, Result{Id: job.Id, X: -1.0, Steps: 0, Err: result.Err})
 			} else {
 				// fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
 				solutions = append(solutions, result)
 			}
-		}	
+		}
 	default:
 		fmt.Println("Unknown method:", method)
 	}
@@ -143,7 +142,7 @@ func handleEdgeCases(job Job) (bool, float64) {
 		solution := -1.0 * math.Log(K) / math.Log(m)
 		if solution < a && solution > b {
 			solution = -1.0
-		} 
+		}
 		return true, solution
 	}
 
@@ -178,4 +177,4 @@ func getIntervals(job Job) [][2]float64 {
 		return [][2]float64{{a, b}}
 	}
 	return [][2]float64{{a, x_limit}, {x_limit, b}}
-}	
+}

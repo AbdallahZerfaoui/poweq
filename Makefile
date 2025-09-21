@@ -1,7 +1,9 @@
-EXEC = poweq
+.PHONY: build solve re-solve clean
+.DEFAULT_GOAL := re-build
+EXEC = poweq.exe
 
 build: 
-	go build -o $(EXEC) main.go csv.go commands.go
+	go build -o $(EXEC) ./cmd/poweq
 
 re-build: clean build
 
@@ -12,5 +14,3 @@ clean:
 	$(RM) -f $(EXEC)
 
 re-solve: build solve
-
-.PHONY: build solve re-solve clean

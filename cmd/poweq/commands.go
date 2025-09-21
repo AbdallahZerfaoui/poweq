@@ -18,7 +18,7 @@ func solveCommand(args []string) ([]solver.Result, error) {
 
 	// Create flag set for the "solve" command
 	n := solverFlagSet.Float64("n", 1.0, "The exponent n in the equation x^n = K m^x")
-	m := solverFlagSet.Float64("m", 1.0, "The base m in the equation x^n = K m^x")
+	m := solverFlagSet.Float64("m", 2.718281828, "The base m in the equation x^n = K m^x")
 	K := solverFlagSet.Float64("K", 1.0, "The coefficient K in the equation x^n = K m^x")
 	a := solverFlagSet.Float64("a", 1e-6, "Lowwer bound of the interval to search for a solution")
 	b := solverFlagSet.Float64("b", 1e6, "Upper bound of the interval to search for a solution")

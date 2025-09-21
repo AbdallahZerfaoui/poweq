@@ -72,7 +72,7 @@ func NewtonSolve(job Job, x0 float64) Result {
 		fpx := fPrime(x0, n, m)
 
 		if fpx == 0 {
-			return Result{0, i, errors.New("derivative is zero")}
+			return Result{job.Id, 0, i, errors.New("derivative is zero")}
 		}
 
 		x1 := x0 - fx/fpx // Newton-Raphson update
@@ -84,15 +84,15 @@ func NewtonSolve(job Job, x0 float64) Result {
 			// However, if an intermediate value is out of bounds, we might still converge to a valid solution.
 			// Thus, we only check the final result.
 			if x1 < a || x1 > b {
-				return Result{0, i + 1, errors.New("solution out of bounds")}
+				return Result{job.Id, 0, i + 1, errors.New("solution out of bounds")}
 			}
-			return Result{x1, i + 1, nil}
+			return Result{job.Id, x1, i + 1, nil}
 		}
 
 		x0 = x1
 	}
 
-	return Result{0, maxIter, errors.New("maximum iterations reached without convergence")}
+	return Result{job.Id, 0, maxIter, errors.New("maximum iterations reached without convergence")}
 }
 
 func BisectionSolve(job Job, lower float64, upper float64) Result {
@@ -104,7 +104,7 @@ func BisectionSolve(job Job, lower float64, upper float64) Result {
 	fb := f(upper, n, m, K)
 
 	if fa*fb > 0 {
-		return Result{0, 0, errors.New("f(a) and f(b) must have opposite signs")}
+		return Result{job.Id, 0, 0, errors.New("f(a) and f(b) must have opposite signs")}
 	}
 
 	for i := range maxIter {
@@ -112,7 +112,7 @@ func BisectionSolve(job Job, lower float64, upper float64) Result {
 		fc := f(c, n, m, K)
 
 		if math.Abs(fc) < tol || (b-a)/2 < tol {
-			return Result{c, i + 1, nil}
+			return Result{job.Id, c, i + 1, nil}
 		}
 
 		if fa*fc < 0 {
@@ -122,7 +122,7 @@ func BisectionSolve(job Job, lower float64, upper float64) Result {
 		}
 	}
 
-	return Result{0, 0, errors.New("maximum iterations reached without convergence")}
+	return Result{job.Id, 0, 0, errors.New("maximum iterations reached without convergence")}
 }
 
 func handleEdgeCases(job Job) (bool, float64) {

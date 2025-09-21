@@ -26,7 +26,8 @@ func main() {
 	// outFile := scannerFlagSet.String("out", "solutions.csv", "Output file to write solutions")
 	
 	// Before this step, n, m and K are default values
-	if os.Args[1] == "scan" {
+	switch os.Args[1] {
+	case "scan":
 		// err := scannerFlagSet.Parse(os.Args[2:])
 		// if err != nil {
 		// 	fmt.Println("Error parsing flags:", err)
@@ -37,8 +38,8 @@ func main() {
 			fmt.Println("Error scanning:", err)
 			return
 		}
-		
-	} else if os.Args[1] == "solve" {
+
+	case "solve":
 
 		solutions, err := solveCommand(os.Args[2:])
 		if err != nil {
@@ -46,6 +47,11 @@ func main() {
 			return
 		}
 		displaySolutions(solutions)
+
+	default:
+		fmt.Println("Unknown command:", os.Args[1])
+		fmt.Println("Available commands: solve, scan")
+		return
 	}
 
 	elapsed := time.Since(start)
@@ -75,7 +81,7 @@ func solveCommand(args []string) ([]solver.Result, error) {
 		return nil, err
 	}
 
-	newJob := solver.Job{N: *n, M: *m, K: *K,
+	newJob := solver.Job{Id: 0, N: *n, M: *m, K: *K,
 		A: *a, B: *b,
 		Tol: *tolence, MaxIter: *maxIter}
 
@@ -148,24 +154,28 @@ func scanCommand(args []string) (solver.Batch, error) {
 		return solver.Batch{}, err
 	}
 	batch.Jobs = jobs
+	// Build a map of jobs by their IDs for easy lookup
+	jobsMap := buildJobsMap(jobs)
 
+	fmt.Println("[debug] Jobs loaded:", len(batch.Jobs))
 	// Solve each job and collect results
 	for _, job := range batch.Jobs {
 		if err := solver.ValidateJob(job); err != nil {
 			fmt.Println("Invalid job parameters:", err)
-			batch.Results = append(batch.Results, solver.Result{X: -1.0, Steps: 0, Err: err})
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: err})
 			continue
 		}
 		if !solver.SolutionsExist(job) {
-			fmt.Println("No solutions exist for the given parameters.")
-			batch.Results = append(batch.Results, solver.Result{X: -1.0, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
+			fmt.Printf("[debug] Solving job %d: N=%.2f, M=%.2f, K=%.2f, A=%.2f, B=%.2f, Tol=%.2e, MaxIter=%d\n", job.Id, job.N, job.M, job.K, job.A, job.B, job.Tol, job.MaxIter)
+			fmt.Println("[scan] No solutions exist for the given parameters.")
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
 			continue
 		}
 		solutions := solver.Solve(job, "newton") // or "bisection"
 		if len(solutions) > 0 {
 			batch.Results = append(batch.Results, solutions...)
 		} else {
-			batch.Results = append(batch.Results, solver.Result{X: -1.0, Steps: 0, Err: errors.New("no solutions found")})
+			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: -1.0, Steps: 0, Err: errors.New("no solutions found")})
 		}
 	}
 
@@ -174,31 +184,31 @@ func scanCommand(args []string) (solver.Batch, error) {
 	defer writer.Flush()
 
 	// Write header
-	err = writer.Write([]string{"N", "M", "K", "A", "B", "Tol", "MaxIter", "X", "Steps", "Error"})
+	err = writer.Write([]string{"Id", "N", "M", "K", "A", "B", "Tol", "MaxIter", "X", "Steps", "Error"})
 	if err != nil {
 		fmt.Println("Error writing header:", err)
 		return batch, err
 	}
 
 	// Write records
-	for _, job := range batch.Jobs {
-		for _, result := range batch.Results {
-			err = writer.Write([]string{
-				fmt.Sprintf("%.2f", job.N),
-				fmt.Sprintf("%.2f", job.M),
-				fmt.Sprintf("%.2f", job.K),
-				fmt.Sprintf("%.2f", job.A),
-				fmt.Sprintf("%.2f", job.B),
-				fmt.Sprintf("%.2e", job.Tol),
-				fmt.Sprintf("%d", job.MaxIter),
-				fmt.Sprintf("%.6f", result.X),
-				fmt.Sprintf("%d", result.Steps),
-				fmt.Sprintf("%v", result.Err),
-			})
-			if err != nil {
-				fmt.Println("Error writing record:", err)
-				return batch, err
-			}
+	for _, result := range batch.Results {
+		job := jobsMap[result.Id]
+		err = writer.Write([]string{
+			fmt.Sprintf("%d", job.Id),
+			fmt.Sprintf("%.2f", job.N),
+			fmt.Sprintf("%.2f", job.M),
+			fmt.Sprintf("%.2f", job.K),
+			fmt.Sprintf("%.2f", job.A),
+			fmt.Sprintf("%.2f", job.B),
+			fmt.Sprintf("%.2e", job.Tol),
+			fmt.Sprintf("%d", job.MaxIter),
+			fmt.Sprintf("%.6f", result.X),
+			fmt.Sprintf("%d", result.Steps),
+			fmt.Sprintf("%v", result.Err),
+		})
+		if err != nil {
+			fmt.Println("Error writing record:", err)
+			return batch, err
 		}
 	}
 
@@ -215,14 +225,16 @@ func readJobsFromCSV(file *os.File) ([]solver.Job, error) {
 
 	// Build jobs from records
 	var jobs []solver.Job
-	for _, record := range records {
-		if len(record) != 7 {
+	for _, record := range records[1:] { // Skip header
+		// fmt.Println("[debug] record:", record)
+		if len(record) != 8 {
 			fmt.Println("Invalid record length:", record)
 			continue
 		}
 		var job solver.Job
-		_, err := fmt.Sscanf(strings.Join(record, ","), "%f,%f,%f,%f,%f,%f,%d",
-			&job.N, &job.M, &job.K, &job.A, &job.B, &job.Tol, &job.MaxIter)
+
+		_, err := fmt.Sscanf(strings.Join(record, ","), "%d,%f,%f,%f,%f,%f,%f,%d",
+			&job.Id, &job.N, &job.M, &job.K, &job.A, &job.B, &job.Tol, &job.MaxIter)
 		if err != nil {
 			fmt.Println("Error parsing record:", record, err)
 			continue
@@ -230,4 +242,12 @@ func readJobsFromCSV(file *os.File) ([]solver.Job, error) {
 		jobs = append(jobs, job)
 	}
 	return jobs, nil
+}
+
+func buildJobsMap(jobs []solver.Job) map[int]solver.Job {
+	jobsMap := make(map[int]solver.Job)
+	for _, job := range jobs {
+		jobsMap[job.Id] = job
+	}
+	return jobsMap
 }

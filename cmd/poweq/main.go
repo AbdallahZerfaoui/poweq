@@ -45,6 +45,13 @@ func main() {
 		}
 		displaySolutions(solutions)
 
+	case "generate":
+		err := generateCommand(os.Args[2:])
+		if err != nil {
+			logger.Println("generate failed", "error", err)
+			return
+		}
+
 	default:
 		logger.Println("unknown command", "command", os.Args[1])
 		logger.Println("Available commands: solve, scan")

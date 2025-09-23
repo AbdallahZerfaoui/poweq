@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DEFAULT_SOLUTIONS_ALGO = "newton"
+	DEFAULT_SOLUTIONS_ALGO = "auto"
 	DEFAULT_ERROR_SOLUTION = -1.0
 )
 
@@ -26,7 +26,7 @@ func solveCommand(args []string) ([]solver.Result, error) {
 	b := solverFlagSet.Float64("b", 1e6, "Upper bound of the interval to search for a solution")
 	tolence := solverFlagSet.Float64("tol", 1e-6, "Tolerance for the solution")
 	maxIter := solverFlagSet.Int("maxIter", 100, "Maximum number of iterations")
-	algorithm := solverFlagSet.String("alg", "newton", "Algorithm to use: 'newton' or 'bisection'")
+	algorithm := solverFlagSet.String("alg", "auto", "Algorithm to use: 'newton' or 'bisection'")
 
 	// Parse flags and execute solving logic
 	err := solverFlagSet.Parse(args)

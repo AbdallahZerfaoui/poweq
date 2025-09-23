@@ -43,6 +43,23 @@ func Solve(job Job, method string, logger *log.Logger) []Result {
 				solutions = append(solutions, result)
 			}
 		}
+	case "auto":
+		// First try Newton-Raphson with multiple initial guesses
+		for _, x0 := range GetInitValues(job) {
+			result := NewtonSolve(job, x0)
+			if result.Err == nil {
+				solutions = append(solutions, result)
+			}
+		}
+		// If no solutions found, fall back to Bisection method
+		if len(solutions) == 0 {
+			for _, interval := range getIntervals(job) {
+				result := BisectionSolve(job, interval[0], interval[1])
+				if result.Err == nil {
+					solutions = append(solutions, result)
+				}
+			}
+		}
 	default:
 		logger.Println("Unknown method:", method)
 	}

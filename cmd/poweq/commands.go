@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"errors"
 	"flag"
-	"fmt"
 	"github.com/AbdallahZerfaoui/poweq/solver"
 	"os"
 )
@@ -12,6 +12,8 @@ const (
 	DEFAULT_SOLUTIONS_ALGO = "newton"
 	DEFAULT_ERROR_SOLUTION = -1.0
 )
+
+// logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
 func solveCommand(args []string) ([]solver.Result, error) {
 	solverFlagSet := flag.NewFlagSet("poweq", flag.ExitOnError)
@@ -29,7 +31,7 @@ func solveCommand(args []string) ([]solver.Result, error) {
 	// Parse flags and execute solving logic
 	err := solverFlagSet.Parse(args)
 	if err != nil {
-		fmt.Println("Error parsing flags:", err)
+		logger.Println("Error parsing flags", "error", err)
 		return nil, err
 	}
 
@@ -38,20 +40,20 @@ func solveCommand(args []string) ([]solver.Result, error) {
 		Tol: *tolence, MaxIter: *maxIter}
 
 	if err := solver.ValidateJob(newJob); err != nil {
-		fmt.Println("Invalid job parameters:", err)
+		logger.Println("Invalid job parameters", "error", err)
 		return nil, err
 	}
 	// Use the right solver functions from the solver package
 
-	fmt.Printf("Solving the equation x^%.2f = %.2f * %.2f^x\n", *n, *K, *m)
-	fmt.Printf("Searching for a solution in the interval [%.2f, %.2f] with tolerance %.2e and max iterations %d\n", *a, *b, *tolence, *maxIter)
+	logger.Println("Solving the equation", "equation", fmt.Sprintf("x^%.2f = %.2f * %.2f^x", *n, *K, *m))
+	logger.Println("Searching for a solution", "interval", fmt.Sprintf("[%.2f, %.2f]", *a, *b), "tolerance", *tolence, "max iterations", *maxIter)
 
 	if !solver.SolutionsExist(newJob) {
-		fmt.Println("No solutions exist for the given parameters.")
+		logger.Println("No solutions exist for the given parameters")
 		return nil, errors.New("no solutions exist for the given parameters")
 	}
 
-	solutions := solver.Solve(newJob, *algorithm)
+	solutions := solver.Solve(newJob, *algorithm, logger)
 
 	return solutions, nil
 }
@@ -59,9 +61,9 @@ func solveCommand(args []string) ([]solver.Result, error) {
 func displaySolutions(solutions []solver.Result) {
 	for _, result := range solutions {
 		if result.Err != nil {
-			fmt.Println("Error:", result.Err)
+			logger.Println("Error", "error", result.Err)
 		} else {
-			fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
+			logger.Println("Found solution", "x", result.X, "steps", result.Steps)
 		}
 	}
 }
@@ -76,7 +78,7 @@ func scanCommand(args []string) (solver.Batch, error) {
 	// Parse flags
 	err := scannerFlagSet.Parse(args)
 	if err != nil {
-		fmt.Println("Error parsing flags:", err)
+		logger.Println("Error parsing flags", "error", err)
 		return solver.Batch{}, err
 	}
 
@@ -87,14 +89,14 @@ func scanCommand(args []string) (solver.Batch, error) {
 	// Open files
 	inFile, err := os.Open(*in)
 	if err != nil {
-		fmt.Println("Error opening input file:", err)
+		logger.Println("Error opening input file", "error", err)
 		return solver.Batch{}, err
 	}
 	defer inFile.Close()
 
 	outFile, err := os.Create(*out)
 	if err != nil {
-		fmt.Println("Error creating output file:", err)
+		logger.Println("Error creating output file", "error", err)
 		return solver.Batch{}, err
 	}
 	defer outFile.Close()
@@ -102,7 +104,7 @@ func scanCommand(args []string) (solver.Batch, error) {
 	// Read jobs from input file
 	jobs, err := readJobsFromCSV(inFile)
 	if err != nil {
-		fmt.Println("Error reading jobs from input file:", err)
+		logger.Println("Error reading jobs from input file", "error", err)
 		return solver.Batch{}, err
 	}
 	batch.Jobs = jobs
@@ -113,7 +115,7 @@ func scanCommand(args []string) (solver.Batch, error) {
 	// Solve each job and collect results
 	for _, job := range batch.Jobs {
 		if err := solver.ValidateJob(job); err != nil {
-			fmt.Println("Invalid job parameters:", err)
+			logger.Println("Invalid job parameters", "error", err)
 			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: err})
 			continue
 		}
@@ -121,7 +123,7 @@ func scanCommand(args []string) (solver.Batch, error) {
 			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
 			continue
 		}
-		solutions := solver.Solve(job, DEFAULT_SOLUTIONS_ALGO) // or "bisection"
+		solutions := solver.Solve(job, DEFAULT_SOLUTIONS_ALGO, logger) // or "bisection"
 		if len(solutions) > 0 {
 			batch.Results = append(batch.Results, solutions...)
 		} else {
@@ -132,7 +134,7 @@ func scanCommand(args []string) (solver.Batch, error) {
 	// Write results to output file using the helper function
 	batch, err = writeResultsToCSV(outFile, batch, jobsMap)
 	if err != nil {
-		fmt.Println("Error writing results to output file:", err)
+		logger.Println("Error writing results to output file", "error", err)
 		return batch, err
 	}
 	return batch, nil

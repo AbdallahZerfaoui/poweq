@@ -16,7 +16,7 @@ func readJobsFromCSV(file *os.File) ([]solver.Job, error) {
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		fmt.Println("Error reading CSV:", err)
+		logger.Println("Error reading CSV:", err)
 		return nil, err
 	}
 
@@ -25,7 +25,7 @@ func readJobsFromCSV(file *os.File) ([]solver.Job, error) {
 	for _, record := range records[1:] { // Skip header
 		// fmt.Println("[debug] record:", record)
 		if len(record) != NBR_FIELDS {
-			fmt.Println("Invalid record length:", record)
+			logger.Println("Invalid record length:", record)
 			continue
 		}
 		var job solver.Job
@@ -33,7 +33,7 @@ func readJobsFromCSV(file *os.File) ([]solver.Job, error) {
 		_, err := fmt.Sscanf(strings.Join(record, ","), "%d,%f,%f,%f,%f,%f,%f,%d",
 			&job.Id, &job.N, &job.M, &job.K, &job.A, &job.B, &job.Tol, &job.MaxIter)
 		if err != nil {
-			fmt.Println("Error parsing record:", record, err)
+			logger.Println("Error parsing record:", record, err)
 			continue
 		}
 		jobs = append(jobs, job)
@@ -57,14 +57,14 @@ func writeResultsToCSV(outFile *os.File, batch solver.Batch, jobsMap map[int]sol
 	// Write header
 	err := writer.Write([]string{"Id", "N", "M", "K", "A", "B", "Tol", "MaxIter", "X", "Steps", "Error"})
 	if err != nil {
-		fmt.Println("Error writing header:", err)
+		logger.Println("Error writing header:", err)
 		return batch, err
 	}
 
 	// Write records
 	for _, result := range batch.Results {
 		if result.Id == 0 {
-			fmt.Println("Skipping result with no associated job ID")
+			logger.Println("Skipping result with no associated job ID")
 			continue // Skip results with no associated job ID
 		}
 		job := jobsMap[result.Id]
@@ -82,7 +82,7 @@ func writeResultsToCSV(outFile *os.File, batch solver.Batch, jobsMap map[int]sol
 			fmt.Sprintf("%v", result.Err),
 		})
 		if err != nil {
-			fmt.Println("Error writing record:", err)
+			logger.Println("Error writing record:", err)
 			return batch, err
 		}
 	}

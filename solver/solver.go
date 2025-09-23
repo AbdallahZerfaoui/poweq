@@ -1,14 +1,14 @@
 package solver
 
 import (
-	"fmt"
+	"log"
 )
 
 // Equation to solve: x^n = K * m^x
 // equivalently: f(x) = n * ln(x) - ln(K) - x * ln(m) = 0
 // f'(x) = n/x - ln(m)
 
-func Solve(job Job, method string) []Result {
+func Solve(job Job, method string, logger *log.Logger) []Result {
 	var solutions []Result
 
 	// Handle edge cases first
@@ -23,7 +23,7 @@ func Solve(job Job, method string) []Result {
 		for _, x0 := range GetInitValues(job) {
 			result := NewtonSolve(job, x0)
 			if result.Err != nil {
-				fmt.Println("Error:", result.Err)
+				logger.Println("Error:", result.Err)
 				solutions = append(solutions, Result{Id: job.Id, X: -1.0, Steps: 0, Err: result.Err})
 			} else {
 				// fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
@@ -36,7 +36,7 @@ func Solve(job Job, method string) []Result {
 		for _, interval := range getIntervals(job) {
 			result := BisectionSolve(job, interval[0], interval[1])
 			if result.Err != nil {
-				fmt.Println("Error:", result.Err)
+				logger.Println("Error:", result.Err)
 				solutions = append(solutions, Result{Id: job.Id, X: -1.0, Steps: 0, Err: result.Err})
 			} else {
 				// fmt.Printf("Found solution x = %.6f in %d steps\n", result.X, result.Steps)
@@ -44,7 +44,7 @@ func Solve(job Job, method string) []Result {
 			}
 		}
 	default:
-		fmt.Println("Unknown method:", method)
+		logger.Println("Unknown method:", method)
 	}
 
 	return solutions

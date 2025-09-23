@@ -8,7 +8,7 @@ import (
 // Bisection method
 
 func BisectionSolve(job Job, lower float64, upper float64) Result {
-	a, b := job.A, job.B
+	// a, b := job.A, job.B
 	n, m := job.N, job.M
 	K, tol, maxIter := job.K, job.Tol, job.MaxIter
 
@@ -23,7 +23,7 @@ func BisectionSolve(job Job, lower float64, upper float64) Result {
 		c := (lower + upper) / 2
 		fc := f(c, n, m, K)
 
-		if math.Abs(fc) < tol || (b-a)/2 < tol {
+		if math.Abs(fc) < tol || (upper-lower)/2 < tol {
 			return Result{job.Id, c, i + 1, nil}
 		}
 
@@ -32,6 +32,7 @@ func BisectionSolve(job Job, lower float64, upper float64) Result {
 		} else {
 			lower = c
 		}
+		fa = f(lower, n, m, K) // Update fa for the new interval
 	}
 
 	return Result{job.Id, 0, 0, errors.New("maximum iterations reached without convergence")}

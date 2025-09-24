@@ -2,3 +2,6 @@
 poweq.exe
 *.txt
 *.csv
+
+# Folders
+tmp/

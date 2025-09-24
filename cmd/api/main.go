@@ -1,16 +1,27 @@
 package main
 
 import (
-	// "errors"
-	// "flag"
-	// "fmt"
-	// "os"
+	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	// "github.com/yourusername/poweq/solver"
+
+
+	_ "github.com/AbdallahZerfaoui/poweq/docs"
 )
+
+// Global logger
+var logger *log.Logger
+
+func init() {
+	// Initialize logger or any other setup if needed
+	logger = log.New(os.Stdout, "[API] ", log.LstdFlags)
+	// Set Gin to release mode (optional)
+	gin.SetMode(gin.ReleaseMode)
+
+}
 
 // @title Power Equation Solver API
 // @version 1.0
@@ -22,11 +33,12 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.GET("/healthz", healthzHandler)
+	router.GET("/healthz", healthHandler)
+	router.POST("/solve", solveHandler)
 
 	// Swagger docs at /docs
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	
+
 	// Start the server
 	router.Run("localhost:8080")
 }

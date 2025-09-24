@@ -11,7 +11,7 @@ func handleEdgeCases(job Job) (bool, float64) {
 	// Case m = 1
 	if m == 1 {
 		solution := math.Pow(K, 1/n)
-		if solution < a && solution > b {
+		if solution < a || solution > b {
 			solution = -1.0
 		}
 		return true, solution
@@ -20,7 +20,7 @@ func handleEdgeCases(job Job) (bool, float64) {
 	// Case n = 0
 	if n == 0 {
 		solution := -1.0 * math.Log(K) / math.Log(m)
-		if solution < a && solution > b {
+		if solution < a || solution > b {
 			solution = -1.0
 		}
 		return true, solution

@@ -1,0 +1,13 @@
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+*.md
+.env
+.air.toml
+tmp/
+build/
+*.log
+.DS_Store
+Thumbs.db

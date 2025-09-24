@@ -1,6 +1,8 @@
 .PHONY: build solve re-solve clean
 .DEFAULT_GOAL := re-build
 EXEC = poweq.exe
+IP = localhost
+PORT = 8080
 
 build: 
 	go build -o $(EXEC) ./cmd/poweq
@@ -14,3 +16,10 @@ clean:
 	$(RM) -f $(EXEC)
 
 re-solve: build solve
+
+# ----- API Testing -----
+curl-equation: 
+	curl -X POST http://$(IP):$(PORT)/solve \
+	  -H "Content-Type: application/json" \
+	  -d '@equation.json' && echo "\n"
+

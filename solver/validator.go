@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func ValidateJob(job Job) error {
+func (job Job) Validate() error {
 	if job.N < 0 {
 		return errors.New("n must be positive or zero")
 	}
@@ -30,7 +30,7 @@ func ValidateJob(job Job) error {
 	return nil
 }
 
-func SolutionsExist(job Job) bool {
+func (job Job) SolutionsExist() bool {
 	n, m, K := job.N, job.M, job.K
 
 	// If the highest point of f(x) is below 0, there is no solution

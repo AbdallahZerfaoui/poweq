@@ -42,7 +42,7 @@ func solveCommand(args []string) ([]solver.Result, error) {
 		A: *a, B: *b,
 		Tol: *tolence, MaxIter: *maxIter}
 
-	if err := solver.ValidateJob(newJob); err != nil {
+	if err := newJob.Validate(); err != nil {
 		logger.Println("Invalid job parameters", "error", err)
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func solveCommand(args []string) ([]solver.Result, error) {
 	logger.Println("Solving the equation", "equation", fmt.Sprintf("x^%.2f = %.2f * %.2f^x", *n, *K, *m))
 	logger.Println("Searching for a solution", "interval", fmt.Sprintf("[%.2f, %.2f]", *a, *b), "tolerance", *tolence, "max iterations", *maxIter)
 
-	if !solver.SolutionsExist(newJob) {
+	if !newJob.SolutionsExist() {
 		logger.Println("No solutions exist for the given parameters")
 		return nil, errors.New("no solutions exist for the given parameters")
 	}
@@ -117,12 +117,12 @@ func scanCommand(args []string) (solver.Batch, error) {
 	// fmt.Println("[debug] Jobs loaded:", len(batch.Jobs))
 	// Solve each job and collect results
 	for _, job := range batch.Jobs {
-		if err := solver.ValidateJob(job); err != nil {
+		if err := job.Validate(); err != nil {
 			logger.Println("Invalid job parameters", "error", err)
 			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: err})
 			continue
 		}
-		if !solver.SolutionsExist(job) {
+		if !job.SolutionsExist() {
 			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
 			continue
 		}
@@ -177,7 +177,7 @@ func generateCommand(args []string) error {
 			Tol:     1e-6,
 			MaxIter: rand.Intn(91) + 10, // MaxIter between 10 and 100
 		}
-		if solver.SolutionsExist(job) { // TODO: Should i keep this check?
+		if job.SolutionsExist() { // TODO: Should i keep this check?
 			record := []string{
 				fmt.Sprintf("%d", job.Id),
 				fmt.Sprintf("%.2f", job.N),

@@ -21,7 +21,7 @@ func (req SolveRequest) Solve4API() (SolveResponse, error) {
 		Tol:     req.Tolerance,
 		MaxIter: req.MaxIter,
 	}
-	solutions := solver.Solve(job, req.Algorithm, logger)
+	solutions := job.Solve(req.Algorithm, logger)
 	if len(solutions) == 0 {
 		return resp, errors.New("no solutions found")
 	}

@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-func handleEdgeCases(job Job) (bool, float64) {
+func (job Job) handleEdgeCases() (bool, float64) {
 	n, m, K := job.N, job.M, job.K
 	a, b := job.A, job.B
 
@@ -29,7 +29,7 @@ func handleEdgeCases(job Job) (bool, float64) {
 	return false, -1.0
 }
 
-func GetInitValues(job Job) []float64 {
+func (job Job) GetInitValues() []float64 {
 	a, b := job.A, job.B
 	n, m := job.N, job.M
 

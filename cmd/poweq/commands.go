@@ -56,7 +56,7 @@ func solveCommand(args []string) ([]solver.Result, error) {
 		return nil, errors.New("no solutions exist for the given parameters")
 	}
 
-	solutions := solver.Solve(newJob, *algorithm, logger)
+	solutions := newJob.Solve(*algorithm, logger)
 
 	return solutions, nil
 }
@@ -126,7 +126,7 @@ func scanCommand(args []string) (solver.Batch, error) {
 			batch.Results = append(batch.Results, solver.Result{Id: job.Id, X: DEFAULT_ERROR_SOLUTION, Steps: 0, Err: errors.New("no solutions exist for the given parameters")})
 			continue
 		}
-		solutions := solver.Solve(job, DEFAULT_SOLUTIONS_ALGO, logger) // or "bisection"
+		solutions := job.Solve(DEFAULT_SOLUTIONS_ALGO, logger) // or "bisection"
 		if len(solutions) > 0 {
 			batch.Results = append(batch.Results, solutions...)
 		} else {

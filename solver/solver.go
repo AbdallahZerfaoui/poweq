@@ -8,11 +8,11 @@ import (
 // equivalently: f(x) = n * ln(x) - ln(K) - x * ln(m) = 0
 // f'(x) = n/x - ln(m)
 
-func Solve(job Job, method string, logger *log.Logger) []Result {
+func (job Job) Solve(method string, logger *log.Logger) []Result {
 	var solutions []Result
 
 	// Handle edge cases first
-	if done, solution := handleEdgeCases(job); done {
+	if done, solution := job.handleEdgeCases(); done {
 		if solution != -1.0 {
 			return append(solutions, Result{Id: job.Id, X: solution, Steps: 0, Err: nil})
 		}
@@ -20,7 +20,7 @@ func Solve(job Job, method string, logger *log.Logger) []Result {
 
 	switch method {
 	case "newton":
-		for _, x0 := range GetInitValues(job) {
+		for _, x0 := range job.GetInitValues() {
 			result := NewtonSolve(job, x0)
 			if result.Err != nil {
 				logger.Println("Error:", result.Err)
@@ -45,7 +45,7 @@ func Solve(job Job, method string, logger *log.Logger) []Result {
 		}
 	case "auto":
 		// First try Newton-Raphson with multiple initial guesses
-		for _, x0 := range GetInitValues(job) {
+		for _, x0 := range job.GetInitValues() {
 			result := NewtonSolve(job, x0)
 			if result.Err == nil {
 				solutions = append(solutions, result)

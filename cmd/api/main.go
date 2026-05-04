@@ -8,7 +8,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-
 	_ "github.com/AbdallahZerfaoui/poweq/docs"
 )
 
@@ -41,9 +40,9 @@ func main() {
 
 	// Set the port from environment variable or default to 8080
 	port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
+	if port == "" {
+		port = "8080"
+	}
 
 	// Start the server
 	router.Run(":" + port)

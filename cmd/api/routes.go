@@ -1,13 +1,8 @@
 package main
 
 import (
-	// "errors"
-	// "flag"
-	// "fmt"
-	// "os"
 	"net/http"
 
-	// "github.com/AbdallahZerfaoui/poweq/solver"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,13 +25,31 @@ type SolveResponse struct {
 type APISolution struct {
 	X     float64 `json:"x" example:"2.0"`
 	Steps int     `json:"steps" example:"5"`
-	Error error  `json:"error,omitempty"`
+	Error error   `json:"error,omitempty"`
 }
 
+// healthHandler handles the health check endpoint.
+// @Summary Health check
+// @Description Returns the API status
+// @Tags health
+// @Produce  json
+// @Success 200 {object} map[string]string
+// @Router /healthz [get]
 func healthHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// Solve godoc
+// @Summary Solve a power equation
+// @Description Solves x^n = K * m^x using the specified algorithm
+// @Tags solver
+// @Accept  json
+// @Produce  json
+// @Param   request body SolveRequest true "Solve Request"
+// @Success 200 {object} SolveResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /solve [post]
 func solveHandler(c *gin.Context) {
 	var req SolveRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -45,7 +58,7 @@ func solveHandler(c *gin.Context) {
 	}
 
 	// Call the solver function (to be implemented)
-	result, err := Solve4API(req)
+	result, err := req.Solve4API()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

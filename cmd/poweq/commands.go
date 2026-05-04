@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"encoding/csv"
 	"errors"
 	"flag"
-	"github.com/AbdallahZerfaoui/poweq/solver"
-	"os"
-	"encoding/csv"
+	"fmt"
 	"math/rand"
+	"os"
+
+	"github.com/AbdallahZerfaoui/poweq/solver"
 )
 
 const (
@@ -143,39 +144,39 @@ func scanCommand(args []string) (solver.Batch, error) {
 }
 
 func generateCommand(args []string) error {
-    generateFlagSet := flag.NewFlagSet("generate", flag.ExitOnError)
+	generateFlagSet := flag.NewFlagSet("generate", flag.ExitOnError)
 
-    N := generateFlagSet.Int("N", 50, "Number of jobs to generate")
-    out := generateFlagSet.String("out", "jobs.csv", "Output file to write jobs")
+	N := generateFlagSet.Int("N", 50, "Number of jobs to generate")
+	out := generateFlagSet.String("out", "jobs.csv", "Output file to write jobs")
 
-    err := generateFlagSet.Parse(args)
-    if err != nil {
-        return err
-    }
+	err := generateFlagSet.Parse(args)
+	if err != nil {
+		return err
+	}
 
-    outFile, err := os.Create(*out)
-    if err != nil {
-        return err
-    }
-    defer outFile.Close()
+	outFile, err := os.Create(*out)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
 
-    writer := csv.NewWriter(outFile)
-    defer writer.Flush()
+	writer := csv.NewWriter(outFile)
+	defer writer.Flush()
 
-    // Write header
-    writer.Write([]string{"Id", "N", "M", "K", "A", "B", "Tol", "MaxIter"})
+	// Write header
+	writer.Write([]string{"Id", "N", "M", "K", "A", "B", "Tol", "MaxIter"})
 
-    for i := 1; i <= *N; i++ {
-        job := solver.Job{
-            Id:      i,
-            N:       float64(rand.Intn(1000) + 10) / 100.0,       // n between 0.1 and 10.0
-            M:       float64(rand.Intn(500) + 110) / 100.0,        // m between 1.1 and 6.0
-            K:       float64(rand.Intn(1000000) + 1) / 100.0,      // K between 0.01 and 10000
-            A:       1e-6,
-            B:       float64(rand.Intn(1000000) + 10), // b between 0.1 and 1000010
-            Tol:     1e-6,
-            MaxIter: rand.Intn(91) + 10,               // MaxIter between 10 and 100
-        }
+	for i := 1; i <= *N; i++ {
+		job := solver.Job{
+			Id:      i,
+			N:       float64(rand.Intn(1000)+10) / 100.0,   // n between 0.1 and 10.0
+			M:       float64(rand.Intn(500)+110) / 100.0,   // m between 1.1 and 6.0
+			K:       float64(rand.Intn(1000000)+1) / 100.0, // K between 0.01 and 10000
+			A:       1e-6,
+			B:       float64(rand.Intn(1000000) + 10), // b between 0.1 and 1000010
+			Tol:     1e-6,
+			MaxIter: rand.Intn(91) + 10, // MaxIter between 10 and 100
+		}
 		if solver.SolutionsExist(job) { // TODO: Should i keep this check?
 			record := []string{
 				fmt.Sprintf("%d", job.Id),
@@ -193,6 +194,6 @@ func generateCommand(args []string) error {
 		}
 	}
 
-    fmt.Printf("Generated %d jobs into %s\n", *N, *out)
-    return nil
+	fmt.Printf("Generated %d jobs into %s\n", *N, *out)
+	return nil
 }

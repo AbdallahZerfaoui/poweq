@@ -23,3 +23,8 @@ curl-equation:
 	  -H "Content-Type: application/json" \
 	  -d '@equation.json' && echo "\n"
 
+swag:
+	swag init -g cmd/api/main.go
+>>>>+++ REPLACE
+
+

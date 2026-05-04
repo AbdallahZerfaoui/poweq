@@ -7,7 +7,7 @@ import (
 
 )
 
-func Solve4API(req SolveRequest) (SolveResponse, error) {
+func (req SolveRequest) Solve4API() (SolveResponse, error) {
 	var resp SolveResponse
 
 	// Call the solver function
